@@ -36,7 +36,8 @@
   .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--primary-500);
              box-shadow:0 0 0 4px rgba(43,182,180,.18)}
 
-  .letter{position:absolute;width:58px;height:58px;border-radius:999px;
+  .letter{
+          z-index:1;position:absolute;width:58px;height:58px;border-radius:999px;
           display:grid;place-items:center;user-select:none;cursor:pointer;
           background:#F1F5F9;color:#334155;font-weight:800;font-size:20px;
           border:1px solid #E2E8F0;box-shadow:0 4px 14px rgba(2,6,23,.06);
@@ -68,13 +69,44 @@
   .feedback{min-height:24px;font-weight:800}
   .ok{color:var(--ok)} .bad{color:var(--err)} .muted{color:var(--muted)}
   .note{font-size:12px;color:var(--muted)}
+
+  /* Reset gomb külön sorban, lejjebb */
+  .bottom-controls{
+    margin-top: 28px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    justify-content: center;
+  }
+
+  /* +10 animáció */
+  .bonus {
+    z-index: 5;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--ok);
+    opacity: 0;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+    pointer-events: none;
+    text-shadow: 0 6px 20px rgba(47,158,68,0.25);
+  }
+  .bonus.show {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="card">
     <div class="brand"><span class="brand-dot"></span> A–Z Board</div>
-    <div class="ring-area" id="ring"></div>
+    <div class="ring-area" id="ring">
+      <!-- +10 animáció helye -->
+      <div id="bonus" class="bonus">+10</div>
+    </div>
   </div>
 
   <div class="panel">
@@ -94,6 +126,10 @@
       <input id="answer" type="text" placeholder="Válasz…" autocomplete="off" disabled />
       <button id="submit" class="btn primary" disabled>Beküld</button>
       <button id="pass" class="btn secondary" disabled>Passz</button>
+    </div>
+
+    <!-- Reset külön, jóval lejjebb -->
+    <div class="bottom-controls">
       <button id="reset" class="btn" title="Játék újra">Reset</button>
     </div>
 
@@ -101,6 +137,9 @@
     <div class="note">A válaszok kis-/nagybetűtől függetlenek; csak az adott betűvel kezdődő, egyszerű szavakat fogad el.</div>
   </div>
 </div>
+
+<!-- Rövid sikerhang -->
+<audio id="ding" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
 <script>
 /* ====== CLUES (3 kérdés betűnként; válasz az adott betűvel kezdődik) ====== */
@@ -242,6 +281,16 @@ function submitCurrent(){
   if(ok){
     state.solved.add(L); state.passed.delete(L); // ha korábban passzolt, vegyük ki
     state.score+=10; scoreEl.textContent=state.score;
+
+    // animáció és hang
+    const bonus = document.getElementById('bonus');
+    if (bonus){
+      bonus.classList.add('show');
+      setTimeout(()=>bonus.classList.remove('show'), 600);
+    }
+    const ding = document.getElementById('ding');
+    if (ding){ try { ding.currentTime = 0; ding.play(); } catch(e){} }
+
     feedback.textContent="Helyes! +10 pont"; feedback.className="feedback ok";
     finishLetter();
   }else{
@@ -314,4 +363,3 @@ buildRing(); renderTime(state.remainingMs); updateCounters();
 </script>
 </body>
 </html>
-
